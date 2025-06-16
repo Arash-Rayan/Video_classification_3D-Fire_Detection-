@@ -8,13 +8,21 @@ from utils.EvalMetrics import loss_fn
 from configs.config import args
 
 loader = data_loader()
-model = FireDetectorConv2D1D() # this works fine 
+
+available_models = {
+    'conv2d1d' : FireDetectorConv2D1D() ,
+    'conv3dResidual': FireDetectorWithResidual(),
+    'resnet3d' : resnet_model, 
+    'slowfast' : slow_fast_model
+
+}
+# model = FireDetectorConv2D1D() 
 # model = FireDetectorWithResidual()
 # model = resnet_model
 # model = slow_fast_model
 
-train_losses, train_accuracies , train_recall, val_losses, val_accuracies , val_recall= train_and_eval_model(model ,loader['sample_train_loader'], loader['sample_test_loader'], loss_fn , args.epochs)
-# train_losses, train_accuracies , train_recall, val_losses, val_accuracies , val_recall= slow_fast_model_train(model ,loader['sample_train_loader'], loader['sample_test_loader'], loss_fn , args.epochs, pathway_alpha=4)
+# train_losses, train_accuracies , train_recall, val_losses, val_accuracies , val_recall= train_and_eval_model(available_models['resnet3d'] ,loader['train_loader'], loader['test_loader'], loss_fn , args.epochs)
+train_losses, train_accuracies , train_recall, val_losses, val_accuracies , val_recall= slow_fast_model_train(available_models['slowfast'] ,loader['train_loader'], loader['test_loader'], loss_fn , args.epochs, pathway_alpha=4)
 
 print(
        f'train loss is {train_losses[-1]:2f}\n',

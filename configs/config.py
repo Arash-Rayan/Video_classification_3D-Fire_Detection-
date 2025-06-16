@@ -7,7 +7,7 @@ default_args = {
     'learning_rate': 0.9, 
     'epochs': 1 ,
     'batch_size': 32, 
-    'root':'/media/ai/External/datasets/firesmoke_dataset',
+    'root':'/Users/alchemist/Desktop/computer_vision/model_data',
     'device' : 'cuda' if torch.cuda.is_available() else 'cpu'
     
 }

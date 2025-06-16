@@ -59,28 +59,28 @@ def data_loader() :
 
     train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
-    train_data_loader = DataLoader(train_dataset, batch_size=2,shuffle=True , num_workers=8)
-    test_data_loader = DataLoader(test_dataset, batch_size=2, shuffle=True , num_workers=8)
 
-    subset_size = int(len(dataset) * 0.1)
+    train_data_loader = DataLoader(train_dataset, batch_size=2,shuffle=True , num_workers=0 , drop_last=True)
+    test_data_loader = DataLoader(test_dataset, batch_size=2, shuffle=True , num_workers=0, drop_last=True)
 
-    subset_data, _ = random_split(dataset, [subset_size, len(dataset) - subset_size])
+    # subset_size = int(len(dataset) * 0.1)
 
-    train_subset_size = int(subset_size * 0.8)
-    test_subset_size = subset_size - train_subset_size
+    # subset_data, _ = random_split(dataset, [subset_size, len(dataset) - subset_size])
 
-    sample_train_dataset, sample_test_dataset = random_split(subset_data, [train_subset_size, test_subset_size])
+    # train_subset_size = int(subset_size * 0.8)
+    # test_subset_size = subset_size - train_subset_size
 
-    # the sample if for test purposes , less sample and epoch see fast result 
+    # sample_train_dataset, sample_test_dataset = random_split(subset_data, [train_subset_size, test_subset_size])
 
-    sample_train_data_loader = DataLoader(sample_train_dataset, batch_size=2, shuffle=True, num_workers=8, drop_last=True)
-    sample_test_data_loader = DataLoader(sample_test_dataset, batch_size=2, shuffle=True, num_workers=8, drop_last=True)
+    # # the sample if for test purposes , less sample and epoch see fast result 
 
+    # sample_train_data_loader = DataLoader(sample_train_dataset, batch_size=2, shuffle=True, num_workers=8, drop_last=True)
+    # sample_test_data_loader = DataLoader(sample_test_dataset, batch_size=2, shuffle=True, num_workers=8, drop_last=True)
     loader_object = {
         'train_loader': train_data_loader , 
         'test_loader' : test_data_loader, 
-        'sample_train_loader' : sample_train_data_loader, 
-        'sample_test_loader' : sample_test_data_loader
+        # 'sample_train_loader' : sample_train_data_loader, 
+        # 'sample_test_loader' : sample_test_data_loader
     }
     return loader_object
 

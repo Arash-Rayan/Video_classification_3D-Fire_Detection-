@@ -29,7 +29,6 @@ def train_and_eval_model(model,
         for x, y in tqdm(train_loader, desc=f"Epoch {epoch+1}/{number_of_epochs} - Training"):
             x, y = x.to(args.device), y.to(args.device)
             y_pred = model(x)
-            print(y_pred.shape)
             y_pred = y_pred.squeeze()
             loss = loss_fn(y_pred, y)
             optimizer.zero_grad()

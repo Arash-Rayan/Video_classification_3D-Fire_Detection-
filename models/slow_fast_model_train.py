@@ -4,8 +4,21 @@ from utils.Dataset import DataLoader
 from typing import Tuple
 from utils.EvalMetrics import measure_model_performance
 from configs.config import args
+from torch import nn
+from pytorchvideo import transforms 
+from pytorchvideo.transforms import (
+    ApplyTransformToKey,
+    NormalizeVideo,
+    ShortSideScale,
+    CenterCropVideo
+)
+from torchvision.transforms import Compose, Lambda
+
 
 slow_fast_model = torch.hub.load('facebookresearch/pytorchvideo', 'slowfast_r50' , pretrained=True)
+in_features = slow_fast_model.blocks[-1].proj.in_features
+slow_fast_model.blocks[-1].proj = nn.Linear(in_features , 1)
+
 
 def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader, 
                           loss_fn,
@@ -32,7 +45,7 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
     def transform_data(data:torch.tensor): 
 
-        # transform = ApplyTransformToKey(
+        # transform = ApplyTransformToKey( 
         # key="video",
         # transform=Compose([
         #     # UniformTemporalSubsample(32), # its for videos , samples are ready
@@ -42,14 +55,14 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
         #     CenterCropVideo(224),
         # ]))
         
-        #input shape N, C , D , H , W 
-        # p_data = data.permute(0, 2 , 1, 3 ,4)
-        # N, D, C, H, W = p_data.shape
-        # r_data = p_data.reshape(N * D, C , H, W)
-        # r_data = {'video' : r_data}
-        # t_data = transform(r_data)['video']
-        # data = t_data.reshape(N, D , C , H , W)    
-        # data = data.permute(0 , 2 , 1, 3, 4)  
+        # input shape N, C , D , H , W 
+        p_data = data.permute(0, 2 , 1, 3 ,4)
+        N, D, C, H, W = p_data.shape
+        r_data = p_data.reshape(N * D, C , H, W)
+        r_data = {'video' : r_data}
+        t_data = transform(r_data)['video']
+        data = t_data.reshape(N, D , C , H , W)    
+        data = data.permute(0 , 2 , 1, 3, 4)  
 
         data = pack_pathway_output(data , pathway_alpha)   # this transofrms frame to slow and fast double frames 
         
@@ -74,8 +87,7 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
             model.train() 
             ypred = model(x).squeeze()
-            print(ypred.shape)
-            ypred = torch.argmax(ypred ,  dim=1)
+            # ypred = torch.argmax(ypred ,  dim=1)
             loss = loss_fn(ypred, y)
             optimizer.zero_grad() 
             loss.backward()
@@ -98,6 +110,8 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
         with torch.inference_mode():
             for x, y in tqdm(val_loader, desc=f"Epoch {epoch+1}/{number_of_epochs} - Validation"):
                 x, y = x.to(args.device), y.to(args.device)
+                x = padd_to_32(x)
+                x = transform_data(x)
                 y_pred = model(x)
                 y_pred = y_pred.squeeze()
                 loss = loss_fn(y_pred, y)
@@ -115,7 +129,7 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
         print(f"[Epoch {epoch+1}] Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_acc:.4f} | Val Loss: {epoch_val_loss:.4f}, Val Acc: {epoch_val_acc:.4f}")
 
-    return train_losses, train_accuracies , train_recalls, val_losses, val_accuracies , val_recall
+    return train_losses, train_accuracies , train_recalls, val_losses, val_accuracies , val_recalls
 
 
 

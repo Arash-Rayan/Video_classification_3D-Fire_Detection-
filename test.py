@@ -1,12 +1,20 @@
-from torchinfo import summary 
-import torch 
-from torch import nn 
+# import torch
+# from torchvision.transforms import Compose
+# from pytorchvideo.transforms import (
+#     ApplyTransformToKey,
+#     UniformTemporalSubsample,
+#     ShortSideScale,
+#     UniformCropVideo
+# )
 
-slow_fast_model = torch.hub.load('facebookresearch/pytorchvideo', 'slowfast_r50' , pretrained=True)
+# transform = ApplyTransformToKey(
+#     key="video",
+#     transform=Compose([
+#         UniformTemporalSubsample(8),     
+#         ShortSideScale(256),             
+#         UniformCropVideo(224, 0),        
+#     ])
+# )
 
-# summary(slow_fast_model)
-in_features = slow_fast_model.blocks[-1].proj.in_features
-# nn.linear(in_feature , 1)
-slow_fast_model.blocks[-1].proj = nn.Linear(in_features , 1)
-
-print(slow_fast_model.blocks)
+import albumentations as A
+ 
