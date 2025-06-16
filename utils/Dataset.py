@@ -51,9 +51,9 @@ class FireVideoDataset(Dataset):
     
 
 
-dataset = FireVideoDataset(root_dir=args.root)
 
-def data_loader(dataset) : 
+def data_loader() : 
+    dataset = FireVideoDataset(root_dir = args.root)
     train_size = int(0.7 *len(dataset))
     test_size = len(dataset) - train_size
 

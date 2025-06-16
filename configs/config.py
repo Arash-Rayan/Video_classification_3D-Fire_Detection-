@@ -4,11 +4,12 @@ parser = argparse.ArgumentParser()
 import torch 
 
 default_args = {
-    'learning_rate': 0.001, 
+    'learning_rate': 0.9, 
     'epochs': 1 ,
     'batch_size': 32, 
-    'root':'media/ai/External/datasets/firesmoke_dataset',
+    'root':'/media/ai/External/datasets/firesmoke_dataset',
     'device' : 'cuda' if torch.cuda.is_available() else 'cpu'
+    
 }
 
 parser.add_argument('--learning_rate', type=int ,default= default_args['learning_rate'])

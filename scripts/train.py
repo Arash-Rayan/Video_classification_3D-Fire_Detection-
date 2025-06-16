@@ -1,7 +1,7 @@
 from configs.config import args
 from torch.utils.data import DataLoader 
 import torch
-import tqdm 
+from tqdm import tqdm 
 from typing import Tuple
 from utils.EvalMetrics import measure_model_performance
 
@@ -13,7 +13,7 @@ def train_and_eval_model(model,
                         #  pack_path_way:Optional[Callable[[int , int], torch.tensor]]
                          ) -> Tuple[list, list, list, list]:
 
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=1e-3, weight_decay=1e-3)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=args.learning_rate) # weight_decay=1e-3
     model.to(args.device)
 
     train_losses, val_losses = [], []
@@ -29,6 +29,7 @@ def train_and_eval_model(model,
         for x, y in tqdm(train_loader, desc=f"Epoch {epoch+1}/{number_of_epochs} - Training"):
             x, y = x.to(args.device), y.to(args.device)
             y_pred = model(x)
+            print(y_pred.shape)
             y_pred = y_pred.squeeze()
             loss = loss_fn(y_pred, y)
             optimizer.zero_grad()
@@ -72,7 +73,7 @@ def train_and_eval_model(model,
 
         print(f"[Epoch {epoch+1}] Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_acc:.4f} | Val Loss: {epoch_val_loss:.4f}, Val Acc: {epoch_val_acc:.4f}")
 
-    return train_losses, train_accuracies , train_recall, val_losses, val_accuracies , val_recall
+    return train_losses, train_accuracies , train_recall, val_losses, val_accuracies , val_recalls
 
 
                   

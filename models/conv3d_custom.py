@@ -1,7 +1,7 @@
 from torch import nn 
 
 class FireDetectorMain3D(nn.Module): 
-    def __init__(self, in_channels , out_channels, kernel_size, padding): 
+    def __init__(self, in_channels, out_channels, kernel_size, padding): 
         super().__init__()
         T, H, W = kernel_size
 

@@ -1,5 +1,5 @@
 import torch
-import tqdm 
+from tqdm import tqdm 
 from utils.Dataset import DataLoader
 from typing import Tuple
 from utils.EvalMetrics import measure_model_performance
@@ -57,7 +57,7 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
         
         
         
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr = args.learning_rate)
     model.to(args.device)
 
     train_losses, val_losses = [], []
@@ -74,6 +74,7 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
             model.train() 
             ypred = model(x).squeeze()
+            print(ypred.shape)
             ypred = torch.argmax(ypred ,  dim=1)
             loss = loss_fn(ypred, y)
             optimizer.zero_grad() 
@@ -100,7 +101,6 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
                 y_pred = model(x)
                 y_pred = y_pred.squeeze()
                 loss = loss_fn(y_pred, y)
-
                 val_loss += loss.item()
                 acc, recall = measure_model_performance(y_pred, y)
                 val_recall += recall.item()
