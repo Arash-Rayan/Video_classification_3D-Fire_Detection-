@@ -10,7 +10,6 @@ def train_and_eval_model(model,
                          val_loader: DataLoader,
                          loss_fn: torch.nn.Module,
                          number_of_epochs: int = args.epochs, 
-                        #  pack_path_way:Optional[Callable[[int , int], torch.tensor]]
                          ) -> Tuple[list, list, list, list]:
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.learning_rate) # weight_decay=1e-3

@@ -36,7 +36,7 @@ class Residual(nn.Module):
         out = out.permute(0, 2 , 3 , 4 , 1)
         out = self.norm1(out)
         out= out.permute(0 , 4 , 1 , 2, 3)
-        # out = self.relu(out)
+        out = self.relu(out)
 
         out = self.conv2(out)
         out = out.permute(0, 2 , 3 , 4 , 1)

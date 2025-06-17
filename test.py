@@ -1,20 +1,14 @@
-# import torch
-# from torchvision.transforms import Compose
-# from pytorchvideo.transforms import (
-#     ApplyTransformToKey,
-#     UniformTemporalSubsample,
-#     ShortSideScale,
-#     UniformCropVideo
-# )
+import torch 
 
-# transform = ApplyTransformToKey(
-#     key="video",
-#     transform=Compose([
-#         UniformTemporalSubsample(8),     
-#         ShortSideScale(256),             
-#         UniformCropVideo(224, 0),        
-#     ])
-# )
+img = torch.rand((5, 3 , 17, 64, 64))
 
-import albumentations as A
- 
+
+def add_pading(img): 
+    B , C , T , H , W = img.shape 
+    print(T )
+    padd = abs(T - 32)
+    re_img = img[:, :, :-1 , : , :].repeat(1, 1 , padd, 1 ,1 )
+    print(re_img.shape)
+
+
+add_pading(img)

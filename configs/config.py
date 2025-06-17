@@ -5,11 +5,10 @@ import torch
 
 default_args = {
     'learning_rate': 0.9, 
-    'epochs': 1 ,
+    'epochs': 1,
     'batch_size': 32, 
-    'root':'/Users/alchemist/Desktop/computer_vision/model_data',
+    'root':'/media/ai/External/datasets/firesmoke_dataset',
     'device' : 'cuda' if torch.cuda.is_available() else 'cpu'
-    
 }
 
 parser.add_argument('--learning_rate', type=int ,default= default_args['learning_rate'])

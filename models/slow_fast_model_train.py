@@ -5,14 +5,6 @@ from typing import Tuple
 from utils.EvalMetrics import measure_model_performance
 from configs.config import args
 from torch import nn
-from pytorchvideo import transforms 
-from pytorchvideo.transforms import (
-    ApplyTransformToKey,
-    NormalizeVideo,
-    ShortSideScale,
-    CenterCropVideo
-)
-from torchvision.transforms import Compose, Lambda
 
 
 slow_fast_model = torch.hub.load('facebookresearch/pytorchvideo', 'slowfast_r50' , pretrained=True)
@@ -45,29 +37,28 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
     def transform_data(data:torch.tensor): 
 
-        # transform = ApplyTransformToKey( 
-        # key="video",
-        # transform=Compose([
-        #     # UniformTemporalSubsample(32), # its for videos , samples are ready
-        #     Lambda(lambda x: x / 255.0),
-        #     NormalizeVideo(mean=[0.45, 0.45, 0.45], std=[0.225, 0.225, 0.225]),
-        #     ShortSideScale(256),
-        #     CenterCropVideo(224),
-        # ]))
-        
+        import albumentations as A
+
+        transform = A.Compose([
+            A.SmallestMaxSize(max_size=256),  # Equivalent to ShortSideScale(256)
+            A.CenterCrop(height=224, width=224),
+            A.Normalize(mean=[0.45]*3, std=[0.225]*3),
+        ])
+
         # input shape N, C , D , H , W 
         p_data = data.permute(0, 2 , 1, 3 ,4)
         N, D, C, H, W = p_data.shape
-        r_data = p_data.reshape(N * D, C , H, W)
-        r_data = {'video' : r_data}
-        t_data = transform(r_data)['video']
-        data = t_data.reshape(N, D , C , H , W)    
-        data = data.permute(0 , 2 , 1, 3, 4)  
+        r_data = p_data.reshape(N * D , H, W , C)
+        n_data = r_data.cpu().numpy()
+        augmented = transform(images=n_data)
+        augmented_video_frames = augmented['images']
 
+        data = augmented_video_frames.reshape(N, D , C , H , W)   
+        data = data.transpose(0 , 2 , 1, 3, 4)  
+        data = torch.from_numpy(data).to(args.device)
         data = pack_pathway_output(data , pathway_alpha)   # this transofrms frame to slow and fast double frames 
         
         return data
-        
         
         
     optimizer = torch.optim.Adam(params=model.parameters(), lr = args.learning_rate)
@@ -87,7 +78,6 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
             model.train() 
             ypred = model(x).squeeze()
-            # ypred = torch.argmax(ypred ,  dim=1)
             loss = loss_fn(ypred, y)
             optimizer.zero_grad() 
             loss.backward()
