@@ -54,6 +54,7 @@ class FireDetectorWithResidual(nn.Module):
             self.bn = nn.BatchNorm3d(16)
             self.relu = nn.ReLU() 
             self.pool1 = nn.MaxPool3d((1 , 2 ,2))
+            
             self.res_block1 = Residual(16, kernel_size=(3 ,3 ,3))
             self.pool2 = nn.MaxPool3d((2 ,2 ,2))
 

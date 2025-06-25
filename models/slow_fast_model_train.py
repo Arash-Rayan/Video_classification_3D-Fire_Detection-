@@ -5,18 +5,20 @@ from typing import Tuple
 from utils.EvalMetrics import measure_model_performance
 from configs.config import args
 from torch import nn
+import albumentations as A
+import os 
+
 
 
 slow_fast_model = torch.hub.load('facebookresearch/pytorchvideo', 'slowfast_r50' , pretrained=True)
 in_features = slow_fast_model.blocks[-1].proj.in_features
 slow_fast_model.blocks[-1].proj = nn.Linear(in_features , 1)
 
-
-def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader, 
+def slow_fast_model_train(model,model_name:str,  train_loader:DataLoader , val_loader:DataLoader, 
                           loss_fn,
                           number_of_epochs:int ,
                           pathway_alpha:int)-> Tuple[list , list , list , list]:
-
+ 
     def pack_pathway_output(frames, alpha):
         fast_pathway = frames
         slow_pathway = frames[:, :, ::alpha, :, :]  # temporal subsampling
@@ -37,7 +39,6 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
 
     def transform_data(data:torch.tensor): 
 
-        import albumentations as A
 
         transform = A.Compose([
             A.SmallestMaxSize(max_size=256),  # Equivalent to ShortSideScale(256)
@@ -75,6 +76,8 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
             x , y = x.to(args.device) , y.to(args.device)
             x = padd_to_32(x)
             x = transform_data(x)
+
+            print(x[0].shape ,x[1].shape)
 
             model.train() 
             ypred = model(x).squeeze()
@@ -116,6 +119,16 @@ def slow_fast_model_train(model, train_loader:DataLoader , val_loader:DataLoader
         val_losses.append(epoch_val_loss)
         val_accuracies.append(epoch_val_acc)
         val_recalls.append(epoch_val_recall)
+
+        model_path = os.path.join('best_models' , f'{model_name}_info.pt')
+        if epoch_val_loss < best_loss:
+            torch.save({
+               'model':  model.state_dict(),
+               'epoch': epoch , 
+               'optimizer' : optimizer.state_dict(),
+            } , model_path)
+            print('model saved')
+            best_loss = epoch_val_loss
 
         print(f"[Epoch {epoch+1}] Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_acc:.4f} | Val Loss: {epoch_val_loss:.4f}, Val Acc: {epoch_val_acc:.4f}")
 

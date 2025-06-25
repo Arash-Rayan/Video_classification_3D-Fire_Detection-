@@ -4,8 +4,10 @@ import torch
 from tqdm import tqdm 
 from typing import Tuple
 from utils.EvalMetrics import measure_model_performance
+import os 
 
 def train_and_eval_model(model,
+                         model_name:str, 
                          train_loader: DataLoader,
                          val_loader: DataLoader,
                          loss_fn: torch.nn.Module,
@@ -18,6 +20,7 @@ def train_and_eval_model(model,
     train_losses, val_losses = [], []
     train_accuracies, val_accuracies = [], []
     train_recall , val_recalls = [] , []
+    best_loss = torch.inf
 
     for epoch in range(number_of_epochs):
 
@@ -67,6 +70,16 @@ def train_and_eval_model(model,
         val_losses.append(epoch_val_loss)
         val_accuracies.append(epoch_val_acc)
         val_recalls.append(epoch_val_recall)
+
+        model_path = os.path.join('best_models' , f'{model_name}_info.pt')
+        if epoch_val_loss < best_loss:
+            torch.save({
+               'model':  model.state_dict(),
+               'epoch': epoch , 
+               'optimizer' : optimizer.state_dict(),
+            } , model_path)
+            print('model saved')
+            best_loss = epoch_val_loss
 
 
         print(f"[Epoch {epoch+1}] Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_acc:.4f} | Val Loss: {epoch_val_loss:.4f}, Val Acc: {epoch_val_acc:.4f}")
